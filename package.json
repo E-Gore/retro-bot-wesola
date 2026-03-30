@@ -1,0 +1,26 @@
+{
+  "name": "retro-bot-terminal-odzyskiwania",
+  "version": "0.1.0",
+  "description": "RETRO BOT / Terminal Odzyskiwania Dostępu - Electron MVP demo",
+  "main": "electron/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "test": "node --test",
+    "check": "node --check electron/main.js && node --check electron/preload.js && node --check src/main/services/sessionAnalysisService.js && node --check src/renderer/renderer.js"
+  },
+  "keywords": [
+    "electron",
+    "kiosk",
+    "art-installation",
+    "retro-terminal"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^35.0.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.9.1"
+  }
+}
