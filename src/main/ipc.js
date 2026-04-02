@@ -10,6 +10,7 @@ function registerIpcHandlers({
   safetyService,
   audioCueService,
   questionGenerationService,
+  reportTxtExportService,
 }) {
   const requireOperator = () => Boolean(config.app.operatorMode);
   const accessDenied = () => ({
@@ -143,6 +144,17 @@ function registerIpcHandlers({
   ipcMain.handle("retrobot:export-analytics", async (_event, payload) => {
     if (!requireOperator()) return accessDenied();
     return analyticsService.exportAnalytics(payload || {});
+  });
+
+  ipcMain.handle("retrobot:export-report-txt", async (_event, payload) => {
+    try {
+      return reportTxtExportService.exportResult(payload?.result || {}, {
+        directory: payload?.directory,
+        fileName: payload?.fileName,
+      });
+    } catch (error) {
+      throw toIpcError(error, "report_txt_export_failed");
+    }
   });
 
   ipcMain.handle("retrobot:audio-cue", async (_event, cueName) => {

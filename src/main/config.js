@@ -71,6 +71,7 @@ function getConfig({ userDataPath }) {
       dataDir: path.join(userDataPath, "retrobot-data"),
       sqlitePath: path.join(userDataPath, "retrobot-data", "retrobot.db"),
       jsonFallbackPath: path.join(userDataPath, "retrobot-data", "retrobot-sessions.json"),
+      exportsDir: path.join(userDataPath, "retrobot-data", "exports"),
     },
     safety: {
       bannedWords: [

@@ -14,6 +14,7 @@ const { SessionAnalysisService } = require("../src/main/services/sessionAnalysis
 const { AudioCueService } = require("../src/main/services/audioCueService");
 const { QuestionGenerationService } = require("../src/main/services/questionGenerationService");
 const { AnalyticsService } = require("../src/main/services/analyticsService");
+const { ReportTxtExportService } = require("../src/main/services/reportTxtExportService");
 
 let mainWindow = null;
 
@@ -65,6 +66,7 @@ async function bootstrap() {
   const connectivityService = new ConnectivityService(config);
   const statsService = new StatsService(repository);
   const analyticsService = new AnalyticsService(repository);
+  const reportTxtExportService = new ReportTxtExportService(config);
   const audioCueService = new AudioCueService();
   const questionGenerationService = new QuestionGenerationService({
     config,
@@ -94,6 +96,7 @@ async function bootstrap() {
     questionGenerationService,
     analyticsService,
     contentGenerationService,
+    reportTxtExportService,
   });
 
   repository.logEvent("app_start", {

@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld("retroBot", {
   getAnalyticsSummary: (payload) => ipcRenderer.invoke("retrobot:get-analytics-summary", payload || {}),
   getQualityReport: (payload) => ipcRenderer.invoke("retrobot:get-quality-report", payload || {}),
   exportAnalytics: (payload) => ipcRenderer.invoke("retrobot:export-analytics", payload || {}),
+  exportReportTxt: (payload) => ipcRenderer.invoke("retrobot:export-report-txt", payload || {}),
   getStaticData: () =>
     clone({
       questions: QUESTIONS,

@@ -275,6 +275,7 @@ class SessionAnalysisService {
 
     return {
       sessionId: normalized.sessionId,
+      createdAt: normalized.startedAt,
       language: normalized.language,
       login: normalized.login,
       verdict: generated.verdict || VERDICTS.DENIED,

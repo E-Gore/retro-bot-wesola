@@ -69,6 +69,7 @@
     },
     debug: {
       enabled: true,
+      overlayOpen: false,
       lines: [],
     },
   };
@@ -129,8 +130,8 @@
       meta: debugMetaString(meta),
     };
     state.debug.lines.push(line);
-    if (state.debug.lines.length > 120) {
-      state.debug.lines.splice(0, state.debug.lines.length - 120);
+    if (state.debug.lines.length > 5000) {
+      state.debug.lines.splice(0, state.debug.lines.length - 5000);
     }
   }
 
@@ -258,6 +259,42 @@
                 .join("")
             : `<div class="debug-line info"><span class="msg">No debug events yet.</span></div>`
         }
+      </div>
+    `;
+  }
+
+  function renderDebugOverlayHtml() {
+    if (!state.debug.enabled || !state.debug.overlayOpen) return "";
+    const lines = state.debug.lines;
+    return `
+      <div class="debug-overlay">
+        <div class="debug-overlay-panel">
+          <div class="debug-overlay-header">
+            <div>
+              <h2>FULL SESSION LOG</h2>
+              <div class="subtle">All debug lines captured in this session: ${escapeHtml(String(lines.length))}</div>
+            </div>
+            <button class="choice-button debug-close-button" data-action="close-debug-overlay">[F3] CLOSE LOG VIEW</button>
+          </div>
+          <div class="debug-overlay-terminal">
+            ${
+              lines.length
+                ? lines
+                    .map(
+                      (line) => `
+                <div class="debug-line ${line.level}">
+                  <span class="ts">${escapeHtml(line.ts)}</span>
+                  <span class="lvl">[${escapeHtml(line.level.toUpperCase())}]</span>
+                  <span class="msg">${escapeHtml(line.message)}</span>
+                  ${line.meta ? `<div class="meta">${escapeHtml(line.meta)}</div>` : ""}
+                </div>
+              `,
+                    )
+                    .join("")
+                : `<div class="debug-line info"><span class="msg">No debug events yet.</span></div>`
+            }
+          </div>
+        </div>
       </div>
     `;
   }
@@ -1432,6 +1469,18 @@
     state.message = "";
     ingestBackendTrace(result);
 
+    try {
+      const exportResult = await api.exportReportTxt({ result: state.result });
+      pushDebug("ok", "report_txt_exported", {
+        filePath: exportResult?.filePath,
+        bytes: exportResult?.bytes,
+      });
+    } catch (error) {
+      pushDebug("warn", "report_txt_export_failed", {
+        error: String(error?.message || error),
+      });
+    }
+
     state.screen = SCREEN_IDS.RESULT;
     state.analysisProgressPct = 100;
     pushDebug("info", "analysis_finished", {
@@ -1459,6 +1508,13 @@
       event.preventDefault();
       state.debug.enabled = !state.debug.enabled;
       pushDebug("info", "debug_panel_toggled", { enabled: state.debug.enabled });
+      render();
+      return;
+    }
+    if (event.key === "F3") {
+      event.preventDefault();
+      state.debug.overlayOpen = !state.debug.overlayOpen;
+      pushDebug("info", "debug_overlay_toggled", { open: state.debug.overlayOpen });
       render();
       return;
     }
@@ -1577,6 +1633,11 @@
     }
     if (action === "toggle-data") {
       state.showDataInfo = !state.showDataInfo;
+      render();
+      return;
+    }
+    if (action === "close-debug-overlay") {
+      state.debug.overlayOpen = false;
       render();
       return;
     }
@@ -1799,8 +1860,9 @@
         </section>
         <footer class="footer">
           <div>${footerLeft || ""}</div>
-          <div>${footerRight || `${escapeHtml(c.keyboardHelp)}  |  F2: debug`}</div>
+          <div>${footerRight || `${escapeHtml(c.keyboardHelp)}  |  F2: debug  |  F3: full log`}</div>
         </footer>
+        ${renderDebugOverlayHtml()}
       </div>
     `;
     focusPrimaryInput();
