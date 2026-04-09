@@ -19,6 +19,12 @@ class QuestionGenerationService {
     return QUESTIONS[idx];
   }
 
+  isSoftQuestionQualityFailure(failureReasons) {
+    const reasons = Array.isArray(failureReasons) ? failureReasons.filter(Boolean) : [];
+    if (!reasons.length) return false;
+    return reasons.every((reason) => reason === "missing_anchor");
+  }
+
   async getAdaptiveQuestion(payload) {
     const startedAt = Date.now();
     const trace = [];
@@ -122,6 +128,7 @@ class QuestionGenerationService {
     const llmAttempted = true;
     let llmSucceeded = false;
     let llmLatencyMs = null;
+    let llmUsage = null;
     let regenCount = 0;
     let lastEvaluation = null;
 
@@ -147,6 +154,7 @@ class QuestionGenerationService {
         tonePreset: this.config.tone.current,
         arcConstraints,
       });
+      llmUsage = firstAttempt?._usage || null;
       llmLatencyMs = Date.now() - llmStartedAt;
       const firstEvaluated = this.evaluateQuestionCandidate({
         question: firstAttempt,
@@ -179,6 +187,7 @@ class QuestionGenerationService {
           arcConstraints,
           qualityFeedback: firstEvaluated.quality.failureReasons.join("; "),
         });
+        llmUsage = retryAttempt?._usage || llmUsage;
         const retryEvaluated = this.evaluateQuestionCandidate({
           question: retryAttempt,
           slot,
@@ -190,8 +199,15 @@ class QuestionGenerationService {
           regenCount,
         });
         lastEvaluation = retryEvaluated;
-        if (retryEvaluated.pass) {
+        if (retryEvaluated.pass || this.isSoftQuestionQualityFailure(retryEvaluated.quality.failureReasons)) {
           candidate = retryEvaluated.question;
+          if (!retryEvaluated.pass) {
+            pushTrace("question_quality_gate", "warn", {
+              reason: retryEvaluated.quality.failureReasons.join("|"),
+              disposition: "soft_accept",
+              noveltyScore: retryEvaluated.quality.noveltyScore,
+            });
+          }
         } else {
           generationError = new Error(`question_quality_gate_failed: ${retryEvaluated.quality.failureReasons.join(",")}`);
           generationReasonCode = LLM_REASON_CODES.UNKNOWN;
@@ -208,9 +224,9 @@ class QuestionGenerationService {
           slotId: slot.id,
           thinking_level: questionThinkingLevel,
           regenCount,
+          usage: llmUsage,
         });
       } else {
-        this.connectivityService.noteFailure();
         pushTrace("gemini_question_generate", "warn", {
           latency_ms: llmLatencyMs,
           reason: generationError ? String(generationError.message || generationError) : "quality_gate_failed",
@@ -325,6 +341,7 @@ class QuestionGenerationService {
         llmAttempted,
         llmSucceeded,
         llmLatencyMs,
+        llmUsage,
         llmThinkingLevel: this.config.llm?.thinkingLevels?.question || "minimal",
         passwordContextSummary: passwordContext.summary,
         generationError: generationError ? String(generationError.message || generationError) : null,

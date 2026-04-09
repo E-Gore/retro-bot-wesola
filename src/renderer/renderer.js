@@ -158,6 +158,7 @@
       llmSucceeded: debug.llmSucceeded,
       llmLatencyMs: debug.llmLatencyMs,
       llmThinkingLevel: debug.llmThinkingLevel,
+      llmTokens: formatTokenUsage(debug.llmUsage),
       rewriteAttempted: debug.rewriteAttempted,
       rewriteSucceeded: debug.rewriteSucceeded,
       pipelineTotalMs: debug.pipelineTotalMs,
@@ -203,6 +204,7 @@
       llmSucceeded: debug.llmSucceeded,
       llmLatencyMs: debug.llmLatencyMs,
       llmThinkingLevel: debug.llmThinkingLevel,
+      llmTokens: formatTokenUsage(debug.llmUsage),
     });
     if (debug.qualitySignals) {
       pushDebug("info", "question_quality", {
@@ -297,6 +299,16 @@
         </div>
       </div>
     `;
+  }
+
+  function formatTokenUsage(usage) {
+    if (!usage || typeof usage !== "object") return "-";
+    const parts = [];
+    if (Number.isFinite(usage.promptTokens)) parts.push(`in ${usage.promptTokens}`);
+    if (Number.isFinite(usage.completionTokens)) parts.push(`out ${usage.completionTokens}`);
+    if (Number.isFinite(usage.totalTokens)) parts.push(`total ${usage.totalTokens}`);
+    if (Number.isFinite(usage.thoughtsTokens)) parts.push(`thinking ${usage.thoughtsTokens}`);
+    return parts.length ? parts.join(" / ") : "-";
   }
 
   function parseIpcErrorPayload(error) {
@@ -2340,6 +2352,7 @@
           <div class="kv-row"><div class="k">Thinking</div><div>${escapeHtml(result.debug?.llmThinkingLevel || "-")}</div></div>
           <div class="kv-row"><div class="k">Rewrite</div><div>${result.debug?.rewriteSucceeded ? "YES" : result.debug?.rewriteAttempted ? "FAILED" : "NO"}</div></div>
           <div class="kv-row"><div class="k">Latency</div><div>${result.debug?.llmLatencyMs ?? "-"} ms</div></div>
+          <div class="kv-row"><div class="k">Tokens</div><div>${escapeHtml(formatTokenUsage(result.debug?.llmUsage))}</div></div>
         </div>
         <div style="height:12px"></div>
         <h2>${escapeHtml(c.labels.metric)}</h2>
@@ -2395,6 +2408,7 @@
           <div class="kv-row"><div class="k">LLM used</div><div>${result.debug?.llmSucceeded ? "YES" : "NO"}</div></div>
           <div class="kv-row"><div class="k">LLM attempted</div><div>${result.debug?.llmAttempted ? "YES" : "NO"}</div></div>
           <div class="kv-row"><div class="k">Thinking</div><div>${escapeHtml(result.debug?.llmThinkingLevel || "-")}</div></div>
+          <div class="kv-row"><div class="k">Tokens</div><div>${escapeHtml(formatTokenUsage(result.debug?.llmUsage))}</div></div>
           <div class="kv-row"><div class="k">Session</div><div>${escapeHtml(result.sessionId || "-")}</div></div>
           <div class="kv-row"><div class="k">Lang</div><div>${escapeHtml((result.language || state.language || "").toUpperCase())}</div></div>
         </div>

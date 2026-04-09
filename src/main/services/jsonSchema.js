@@ -141,7 +141,7 @@ function validateAdaptiveQuestionShape(obj, slot) {
   if (!type) errors.push("type");
 
   const prompt =
-    typeof obj.prompt === "string" && obj.prompt.trim() ? clamp(obj.prompt.trim(), 140) : null;
+    typeof obj.prompt === "string" && obj.prompt.trim() ? clamp(obj.prompt.trim(), 160) : null;
   if (!prompt) errors.push("prompt");
 
   const expectedIntent = typeof slot.intentTag === "string" ? slot.intentTag : null;

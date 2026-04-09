@@ -83,30 +83,38 @@ class ContentGenerationService {
     }
     const prompt = this.buildPrompt(input);
     const responseJsonSchema = this.buildReportResponseJsonSchema();
-    const rawText = await this.callGemini(prompt, {
+    const response = await this.callGemini(prompt, {
       thinkingLevel: this.config.llm?.thinkingLevels?.report || "low",
       responseJsonSchema,
     });
+    const rawText = response.text;
     const parsed = parseGeneratedJson(rawText);
 
     if (!parsed.ok) {
-      const repairedText = await this.repairJson(rawText, input, { responseJsonSchema });
-      const repaired = parseGeneratedJson(repairedText);
-      if (!repaired.ok) {
-        throw new Error(`Gemini JSON parse failed: ${repaired.error?.message || "unknown"}`);
+      const repairedResponse = await this.repairJson(rawText, input, { responseJsonSchema });
+      const repairedText = repairedResponse.text;
+      const repairedParsed = parseGeneratedJson(repairedText);
+      if (!repairedParsed.ok) {
+        throw new Error(`Gemini JSON parse failed: ${repairedParsed.error?.message || "unknown"}`);
       }
-      const validated = validateGeneratedCopyShape(repaired.value);
+      const validated = validateGeneratedCopyShape(repairedParsed.value);
       if (!validated.ok) {
         throw new Error(`Gemini JSON schema invalid after repair: ${validated.errors.join(", ")}`);
       }
-      return validated.value;
+      return {
+        ...validated.value,
+        _usage: repairedResponse.usage || response.usage || null,
+      };
     }
 
     const validated = validateGeneratedCopyShape(parsed.value);
     if (!validated.ok) {
       throw new Error(`Gemini JSON schema invalid: ${validated.errors.join(", ")}`);
     }
-    return validated.value;
+    return {
+      ...validated.value,
+      _usage: response.usage || null,
+    };
   }
 
   async generateAdaptiveQuestion(input) {
@@ -115,30 +123,38 @@ class ContentGenerationService {
     }
     const prompt = this.buildAdaptiveQuestionPrompt(input);
     const responseJsonSchema = this.buildAdaptiveQuestionResponseJsonSchema(input.slot, input.language);
-    const rawText = await this.callGemini(prompt, {
+    const response = await this.callGemini(prompt, {
       thinkingLevel: this.config.llm?.thinkingLevels?.question || "minimal",
       responseJsonSchema,
     });
+    const rawText = response.text;
     const parsed = parseGeneratedJson(rawText);
 
     if (!parsed.ok) {
-      const repairedText = await this.repairJson(rawText, input, { responseJsonSchema });
-      const repaired = parseGeneratedJson(repairedText);
-      if (!repaired.ok) {
-        throw new Error(`Gemini question JSON parse failed: ${repaired.error?.message || "unknown"}`);
+      const repairedResponse = await this.repairJson(rawText, input, { responseJsonSchema });
+      const repairedText = repairedResponse.text;
+      const repairedParsed = parseGeneratedJson(repairedText);
+      if (!repairedParsed.ok) {
+        throw new Error(`Gemini question JSON parse failed: ${repairedParsed.error?.message || "unknown"}`);
       }
-      const validated = validateAdaptiveQuestionShape(repaired.value, input.slot);
+      const validated = validateAdaptiveQuestionShape(repairedParsed.value, input.slot);
       if (!validated.ok) {
         throw new Error(`Gemini question schema invalid after repair: ${validated.errors.join(", ")}`);
       }
-      return validated.value;
+      return {
+        ...validated.value,
+        _usage: repairedResponse.usage || response.usage || null,
+      };
     }
 
     const validated = validateAdaptiveQuestionShape(parsed.value, input.slot);
     if (!validated.ok) {
       throw new Error(`Gemini question schema invalid: ${validated.errors.join(", ")}`);
     }
-    return validated.value;
+    return {
+      ...validated.value,
+      _usage: response.usage || null,
+    };
   }
 
   buildPrompt(input) {
@@ -581,7 +597,10 @@ class ContentGenerationService {
       if (!text) {
         throw new Error("Gemini returned no text content");
       }
-      return text;
+      return {
+        text,
+        usage: this.extractUsage(payload),
+      };
     } catch (error) {
       if (error && (error.name === "AbortError" || String(error.message || "").includes("aborted"))) {
         const timeoutError = new Error(`Gemini request timeout after ${timeoutMs}ms`);
@@ -614,6 +633,22 @@ class ContentGenerationService {
       }
     }
     return "";
+  }
+
+  extractUsage(payload) {
+    const usage = payload?.usageMetadata;
+    if (!usage || typeof usage !== "object") return null;
+    const promptTokens = Number(usage.promptTokenCount);
+    const completionTokens = Number(usage.candidatesTokenCount);
+    const totalTokens = Number(usage.totalTokenCount);
+    const thoughtsTokens = Number(usage.thoughtsTokenCount);
+
+    return {
+      promptTokens: Number.isFinite(promptTokens) ? promptTokens : null,
+      completionTokens: Number.isFinite(completionTokens) ? completionTokens : null,
+      totalTokens: Number.isFinite(totalTokens) ? totalTokens : null,
+      thoughtsTokens: Number.isFinite(thoughtsTokens) ? thoughtsTokens : null,
+    };
   }
 }
 

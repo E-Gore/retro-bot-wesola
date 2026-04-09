@@ -23,7 +23,7 @@ function parseBoolEnv(name, fallback = false) {
 }
 
 function getConfig({ userDataPath }) {
-  const tonePreset = process.env.RETROBOT_TONE_PRESET || "cruel_balanced";
+  const tonePreset = process.env.RETROBOT_TONE_PRESET || "cruel_sharp";
   const fullScreenEnv = process.env.RETROBOT_FULLSCREEN;
   const kioskEnv = process.env.RETROBOT_KIOSK;
 
@@ -60,11 +60,11 @@ function getConfig({ userDataPath }) {
       baseUrl:
         process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta",
       temperature: Number(process.env.GEMINI_TEMPERATURE || "1.0"),
-      timeoutMs: parseIntEnv("GEMINI_TIMEOUT_MS", 15000),
+      timeoutMs: parseIntEnv("GEMINI_TIMEOUT_MS", 20000),
       thinkingLevels: {
-        question: parseThinkingLevelEnv("GEMINI_THINKING_LEVEL_QUESTION", "low"),
-        report: parseThinkingLevelEnv("GEMINI_THINKING_LEVEL_REPORT", "low"),
-        repair: parseThinkingLevelEnv("GEMINI_THINKING_LEVEL_REPAIR", "minimal"),
+        question: parseThinkingLevelEnv("GEMINI_THINKING_LEVEL_QUESTION", "high"),
+        report: parseThinkingLevelEnv("GEMINI_THINKING_LEVEL_REPORT", "high"),
+        repair: parseThinkingLevelEnv("GEMINI_THINKING_LEVEL_REPAIR", "high"),
       },
     },
     storage: {

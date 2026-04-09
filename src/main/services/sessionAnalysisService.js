@@ -100,6 +100,7 @@ class SessionAnalysisService {
     const llmAttempted = true;
     let llmSucceeded = false;
     let llmLatencyMs = null;
+    let llmUsage = null;
     const rewriteAttempted = false;
     const rewriteSucceeded = false;
 
@@ -123,6 +124,7 @@ class SessionAnalysisService {
         tonePreset: this.config.tone.current,
         userInputFlags: userScreen.flags,
       });
+      llmUsage = generated?._usage || null;
       llmLatencyMs = Date.now() - llmStartedAt;
       llmSucceeded = true;
       this.connectivityService.noteSuccess();
@@ -130,6 +132,7 @@ class SessionAnalysisService {
         latency_ms: llmLatencyMs,
         verdict: generated.verdict,
         thinking_level: reportThinkingLevel,
+        usage: llmUsage,
       });
     } catch (error) {
       llmLatencyMs = Date.now() - llmStartedAt;
@@ -297,6 +300,7 @@ class SessionAnalysisService {
         llmAttempted,
         llmSucceeded,
         llmLatencyMs,
+        llmUsage,
         llmThinkingLevel: this.config.llm?.thinkingLevels?.report || "low",
         rewriteAttempted,
         rewriteSucceeded,
