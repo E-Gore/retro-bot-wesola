@@ -1,6 +1,7 @@
 const { QUESTIONS, RHETORICAL_FORMS } = require("../../shared/questions");
 const { LLM_REASON_CODES } = require("../../shared/constants");
 const { buildPasswordContext } = require("../utils/passwordContext");
+const { normalizeSessionTheme } = require("../utils/sessionTheme");
 
 class QuestionGenerationService {
   constructor({ config, contentGenerationService, safetyService, connectivityService, repository = null }) {
@@ -35,6 +36,7 @@ class QuestionGenerationService {
     const language = payload.language === "en" ? "en" : "pl";
     const sessionId = String(payload.sessionId || "");
     const login = this.safetyService.sanitizeText(payload.login || "USER", 24) || "USER";
+    const sessionTheme = normalizeSessionTheme(payload.sessionTheme || payload.meta?.sessionTheme || "");
     const previousHistory = this.normalizePreviousHistory(payload.previousHistory);
     const passwordContext = buildPasswordContext(payload.passwordAttempts, this.safetyService);
     const contextFocus = this.buildContextFocus({ previousHistory, passwordContext });
@@ -47,6 +49,7 @@ class QuestionGenerationService {
       passwordContext,
       contextFocus,
       login,
+      sessionTheme,
       questionIndex: Number(payload.questionIndex),
       sessionId,
       arcState,
@@ -149,6 +152,7 @@ class QuestionGenerationService {
         login,
         previousHistory,
         passwordContext,
+        sessionTheme,
         contextFocus,
         interactionDigest,
         tonePreset: this.config.tone.current,
@@ -181,6 +185,7 @@ class QuestionGenerationService {
           login,
           previousHistory,
           passwordContext,
+          sessionTheme,
           contextFocus,
           interactionDigest,
           tonePreset: this.config.tone.current,
@@ -489,7 +494,17 @@ class QuestionGenerationService {
     return [...new Set(tokens.filter((token) => token.length >= 4))].slice(0, 24);
   }
 
-  buildInteractionDigest({ language, previousHistory, passwordContext, contextFocus, login, questionIndex, sessionId, arcState }) {
+  buildInteractionDigest({
+    language,
+    previousHistory,
+    passwordContext,
+    contextFocus,
+    login,
+    sessionTheme,
+    questionIndex,
+    sessionId,
+    arcState,
+  }) {
     const history = Array.isArray(previousHistory) ? previousHistory : [];
     const summary = passwordContext?.summary || {};
     const purpose = history.find((h) => h.id === "purpose")?.answerLabel || history.find((h) => h.id === "purpose")?.answerValue || "";
@@ -504,6 +519,7 @@ class QuestionGenerationService {
         ? [
             `- kontekst_fokus: ${contextFocus}`,
             `- login: ${login}`,
+            `- motyw_sesji: ${sessionTheme || "brak"}`,
             `- cel_zadeklarowany: ${purpose || "brak"}`,
             `- autodefinicja: ${selfWord || "brak"}`,
             `- ostatnia_para_q_a: Q="${lastQ || "-"}" / A="${lastA || "-"}"`,
@@ -515,6 +531,7 @@ class QuestionGenerationService {
         : [
             `- context_focus: ${contextFocus}`,
             `- login: ${login}`,
+            `- session_theme: ${sessionTheme || "none"}`,
             `- declared_purpose: ${purpose || "none"}`,
             `- self_word: ${selfWord || "none"}`,
             `- last_q_a_pair: Q="${lastQ || "-"}" / A="${lastA || "-"}"`,

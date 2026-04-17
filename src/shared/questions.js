@@ -11,8 +11,9 @@ const RHETORICAL_FORMS = ["probe", "contrast", "counterfactual", "cost_frame", "
 const QUESTION_ARC = [
   {
     id: "purpose",
-    type: "choice",
-    maxLength: 32,
+    type: "text",
+    minLength: 3,
+    maxLength: 64,
     intentTag: INTENT_TAGS.MOTIVE_DECLARATION,
     stageLabel: {
       pl: "ETAP 1: MOTYW WEJŚCIA",
@@ -21,32 +22,19 @@ const QUESTION_ARC = [
     forbiddenIntentOverlap: [],
     preferredRhetoricalForms: ["probe", "contrast"],
     prompt: {
-      pl: "Po co tu jesteś?",
-      en: "Why are you here?",
+      pl: "Z jakim celem wchodzisz w tę sesję?",
+      en: "What brings you into this session?",
     },
-    options: [
-      { value: "curiosity", label: { pl: "Ciekawość", en: "Curiosity" } },
-      {
-        value: "beat_machine",
-        label: { pl: "Chcę wygrać z maszyną", en: "I want to beat the machine" },
-      },
-      {
-        value: "proof",
-        label: { pl: "Chcę dowodu", en: "I want proof" },
-      },
-      { value: "bored", label: { pl: "Nudzę się", en: "I'm bored" } },
-      {
-        value: "self_search",
-        label: { pl: "Szukam czegoś o sobie", en: "Looking for something about myself" },
-      },
-      { value: "other", label: { pl: "Inne", en: "Other" } },
-    ],
+    placeholder: {
+      pl: "Napisz krótko, po co tu jesteś",
+      en: "Briefly say why you are here",
+    },
   },
   {
     id: "self_word",
     type: "text",
     minLength: 1,
-    maxLength: 24,
+    maxLength: 36,
     intentTag: INTENT_TAGS.SELF_STATE_LABEL,
     stageLabel: {
       pl: "ETAP 2: AUTODEFINICJA",
@@ -55,8 +43,8 @@ const QUESTION_ARC = [
     forbiddenIntentOverlap: [],
     preferredRhetoricalForms: ["probe", "contrast"],
     prompt: {
-      pl: "Wpisz jedno słowo, które ostatnio cię opisuje.",
-      en: "Type one word that describes you lately.",
+      pl: "Wpisz jedno słowo, które najlepiej opisuje cię teraz.",
+      en: "Type one word that best describes you right now.",
     },
     placeholder: {
       pl: "np. zmęczony",
@@ -76,8 +64,8 @@ const QUESTION_ARC = [
     forbiddenIntentOverlap: [INTENT_TAGS.CONSEQUENCE_TRADEOFF],
     preferredRhetoricalForms: ["counterfactual", "contrast"],
     prompt: {
-      pl: "Kiedy czujesz ocenę albo ignorowanie, co to z tobą robi? (krótko)",
-      en: "When you feel judged or ignored, what does it do to you? (short)",
+      pl: "Kiedy czujesz ocenę albo ignorowanie, co dzieje się w tobie najpierw? (krótko)",
+      en: "When you feel judged or ignored, what happens in you first? (short)",
     },
     placeholder: {
       pl: "np. spinam się i wycofuję",
@@ -97,8 +85,8 @@ const QUESTION_ARC = [
     forbiddenIntentOverlap: [],
     preferredRhetoricalForms: ["counterfactual", "commitment"],
     prompt: {
-      pl: "Podaj nawyk, którego bronisz, choć wiesz, że jest głupi.",
-      en: "Name a habit you defend even though you know it's stupid.",
+      pl: "Podaj nawyk, którego trzymasz się, choć widzisz jego koszt.",
+      en: "Name a habit you keep even though you can see its cost.",
     },
     placeholder: {
       pl: "np. odkładanie wszystkiego",

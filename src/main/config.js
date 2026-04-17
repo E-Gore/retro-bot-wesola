@@ -23,7 +23,7 @@ function parseBoolEnv(name, fallback = false) {
 }
 
 function getConfig({ userDataPath }) {
-  const tonePreset = process.env.RETROBOT_TONE_PRESET || "cruel_sharp";
+  const tonePreset = process.env.RETROBOT_TONE_PRESET || "test_1";
   const fullScreenEnv = process.env.RETROBOT_FULLSCREEN;
   const kioskEnv = process.env.RETROBOT_KIOSK;
 
@@ -34,7 +34,7 @@ function getConfig({ userDataPath }) {
       fullscreen: fullScreenEnv === "0" ? false : true,
       kiosk: kioskEnv === "1",
       operatorMode: parseBoolEnv("RETROBOT_OPERATOR_MODE", false),
-      idleTimeoutMs: parseIntEnv("RETROBOT_IDLE_TIMEOUT_MS", 35000),
+      idleTimeoutMs: parseIntEnv("RETROBOT_IDLE_TIMEOUT_MS", 50000),
       postResultTimeoutMs: parseIntEnv("RETROBOT_POST_RESULT_TIMEOUT_MS", 180000),
       handoffDurationMs: 1600,
       analysisMinMs: 3000,
@@ -51,6 +51,8 @@ function getConfig({ userDataPath }) {
           "corporate cynicism, surgical observations, passive-aggressive, elegant, witty, sharp but clean",
         cruel_sharp:
           "cold, precise, biting, superior tone, still safe and non-abusive, elegant and controlled",
+        test_1:
+          "enigmatic"
       },
     },
     llm: {
