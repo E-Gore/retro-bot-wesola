@@ -23,7 +23,7 @@ function parseBoolEnv(name, fallback = false) {
 }
 
 function getConfig({ userDataPath }) {
-  const tonePreset = process.env.RETROBOT_TONE_PRESET || "test_1";
+  const tonePreset = process.env.RETROBOT_TONE_PRESET || "cruel_sharp";
   const fullScreenEnv = process.env.RETROBOT_FULLSCREEN;
   const kioskEnv = process.env.RETROBOT_KIOSK;
 
@@ -61,7 +61,7 @@ function getConfig({ userDataPath }) {
       model: process.env.GEMINI_MODEL || "gemini-3-flash-preview",
       baseUrl:
         process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com/v1beta",
-      temperature: Number(process.env.GEMINI_TEMPERATURE || "1.0"),
+      temperature: Number(process.env.GEMINI_TEMPERATURE || "0.6"),
       timeoutMs: parseIntEnv("GEMINI_TIMEOUT_MS", 20000),
       thinkingLevels: {
         question: parseThinkingLevelEnv("GEMINI_THINKING_LEVEL_QUESTION", "high"),

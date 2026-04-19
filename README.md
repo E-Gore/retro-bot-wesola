@@ -5,12 +5,13 @@ Electronowy prototyp demonstracyjny instalacji galeryjnej:
 - keyboard-first flow (PL/EN)
 - 3 błędne próby hasła
 - przejście w "osobowość systemu"
-- 5 pytań (dynamiczne + otwarte)
+- 5 pytań (otwarte)
 - controlled arc 5 pytań (intencje Q1..Q5 + antyduplikacja)
 - mikro-przejścia między pytaniami (600–1200 ms, Enter = skip)
 - analiza (Gemini, LLM-required mode)
 - ekranowy paragon
 - lokalny zapis sesji (SQLite jeśli dostępny, JSON storage fallback)
+- export do pliku txt
 - analityka skuteczności (lokalnie, bez publicznego archiwum)
 
 ## Uruchomienie
@@ -26,7 +27,7 @@ Electronowy prototyp demonstracyjny instalacji galeryjnej:
 - `RETROBOT_TONE_PRESET` - `cruel_light`, `cruel_balanced`, `cruel_sharp`
 - `RETROBOT_KIOSK` - `1` aby wymusić `kiosk: true`
 - `RETROBOT_FULLSCREEN` - `0` aby wyłączyć fullscreen podczas developmentu
-- `RETROBOT_IDLE_TIMEOUT_MS` - timeout bezczynności (domyślnie `35000`)
+- `RETROBOT_IDLE_TIMEOUT_MS` - timeout bezczynności (domyślnie `50000`)
 - `RETROBOT_POST_RESULT_TIMEOUT_MS` - timeout po wyniku (domyślnie `180000`)
 - `RETROBOT_OPERATOR_MODE` - `1` aby odblokować IPC analityczne i eksport
 - `GEMINI_THINKING_LEVEL_QUESTION` - `minimal|low|medium|high` (domyślnie `low`)
